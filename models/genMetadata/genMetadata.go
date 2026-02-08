@@ -36,6 +36,14 @@ func generateLWC(name, path string) []string {
 	raw := fmt.Sprintf("lightning generate component --name %s --type lwc --output-dir %s/lwc", name, path)
 	return strings.Split(raw, " ")
 }
+func generateApexClass(name, path string) []string {
+	raw := fmt.Sprintf("apex generate class --name %s --output-dir %s/classes", name, path)
+	return strings.Split(raw, " ")
+}
+func generateApexTrigger(name,sobject, path string) []string {
+	raw := fmt.Sprintf("apex generate trigger --name %s --sobject %s --output-dir %s/triggers", name,sobject, path)
+	return strings.Split(raw, " ")
+}
 
 func New(metadataType MetadataType, output string) Model {
 	input := textinput.New()
@@ -47,7 +55,6 @@ func New(metadataType MetadataType, output string) Model {
 		input: input,
 		metadataType: metadataType,
 		output: output,
-		// "/home/brtheo/Code/SF/DEVORG/force-app/main/default"
 		state: IDLE,
 	}
 }
@@ -71,7 +78,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Sequence(
 						func() tea.Cmd {
 							return func() tea.Msg {
-								return exec.Command("sf", generateLWC(value, m.output)...).Run()
+								switch m.metadataType {
+								case LWC:
+									return exec.Command("sf", generateLWC(value, m.output)...).Run()
+								case ApexClass:
+									return exec.Command("sf", generateApexClass(value, m.output)...).Run()
+								case ApexTrigger:
+									return exec.Command("sf", generateApexTrigger(value, "", m.output)...).Run()
+								}
+								return nil
 							}
 						}(), tea.Quit,
 					)
