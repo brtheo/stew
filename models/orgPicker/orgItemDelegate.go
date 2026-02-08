@@ -15,7 +15,7 @@ var (
     checkboxStyle = lipgloss.
     	NewStyle().
       Bold(true).
-      MarginTop(1).
+      MarginRight(1).
       Foreground(lipgloss.Color("#0EEE91"))
 
     activeStyle = lipgloss.
@@ -51,8 +51,8 @@ func location(orgItem orgItem) string {
 func alias(orgItem orgItem) string {
 	return lipgloss.
 		NewStyle().
-		Border(lipgloss.RoundedBorder(), true, true, true, true).
-		BorderForeground(lipgloss.Color("#FF538A")).
+		// Border(lipgloss.RoundedBorder(), true, true, true, true).
+		Background(lipgloss.Color("#FF538A")).
 		Foreground(lipgloss.Color("#FDB6C5")).
 		Render(orgItem.alias)
 }
@@ -68,15 +68,15 @@ func(d orgItemDelegate) Render(w io.Writer, m list.Model, index int, item list.I
 	listItem := lipgloss.JoinHorizontal(lipgloss.Left, checkbox(orgItem.isDefaultOrg), verticalStack)
 
 	if index == m.Cursor() {
-			listItem = activeStyle.Render(listItem)
+		listItem = activeStyle.Render(listItem)
 	} else {
-			listItem = lipgloss.NewStyle().PaddingLeft(2).Render(listItem)
+		listItem = lipgloss.NewStyle().PaddingLeft(1).Render(listItem)
 	}
   fmt.Fprint(w, listItem)
 }
 
 func(d orgItemDelegate) Height() int {
-	return 3
+	return 2
 }
 
 func(d orgItemDelegate) Spacing() int {

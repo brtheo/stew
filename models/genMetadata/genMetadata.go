@@ -10,11 +10,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type metadataType string
+type MetadataType string
 const (
-	LWC metadataType = "LWC"
-	ApexClass metadataType = "ApexClass"
-	ApexTrigger metadataType = "ApexTrigger"
+	LWC MetadataType = "LWC"
+	ApexClass MetadataType = "ApexClass"
+	ApexTrigger MetadataType = "ApexTrigger"
 )
 
 type viewState string
@@ -24,45 +24,42 @@ const (
 	DONE viewState = "DONE"
 )
 
-type model struct {
+type Model struct {
 	input textinput.Model
-	metadataType metadataType
-	path string
+	metadataType MetadataType
+	output string
 	name string
 	state viewState
 }
-var docStyle = lipgloss.NewStyle().Margin(1, 1)
 
 func generateLWC(name, path string) []string {
 	raw := fmt.Sprintf("lightning generate component --name %s --type lwc --output-dir %s/lwc", name, path)
 	return strings.Split(raw, " ")
 }
 
-func New(metadataType metadataType) model {
+func New(metadataType MetadataType, output string) Model {
 	input := textinput.New()
 	input.Width = 50
 	input.Placeholder = fmt.Sprintf("Enter %s name", metadataType)
 	input.Focus()
 
-	return model{
+	return Model{
 		input: input,
 		metadataType: metadataType,
-		path: "/home/brtheo/Code/SF/DEVORG/force-app/main/default",
-		// TODO : replace hard coded path with args from main + using https://github.com/alexflint/go-arg
+		output: output,
+		// "/home/brtheo/Code/SF/DEVORG/force-app/main/default"
 		state: IDLE,
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch msg.Type {
-				case tea.KeyCtrlC, tea.KeyEsc:
-					return m, tea.Quit
 				case tea.KeyEnter:
 				  value := strings.TrimSpace(m.input.Value())
 					if value == "" {
@@ -74,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Sequence(
 						func() tea.Cmd {
 							return func() tea.Msg {
-								return exec.Command("sf", generateLWC(value, m.path)...).Run()
+								return exec.Command("sf", generateLWC(value, m.output)...).Run()
 							}
 						}(), tea.Quit,
 					)
@@ -85,7 +82,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, inputCmd
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	input := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#1AB9FF")).
@@ -94,13 +91,14 @@ func (m model) View() string {
 		Foreground(lipgloss.Color("#D83A00")).
 		PaddingLeft(1).
 		Render(" Name cannot be empty")
+
 	switch m.state {
 	case IDLE:
-		return docStyle.Render(input)
+		return input
 	case ERR:
-		return docStyle.Render(lipgloss.JoinVertical(lipgloss.Left, input, errMsg))
+		return lipgloss.JoinVertical(lipgloss.Left, input, errMsg)
 	case DONE:
-		return docStyle.Render("Metadata created successfully")
+		return "Metadata created successfully"
 	}
-	return docStyle.Render(m.input.View())
+	return m.input.View()
 }

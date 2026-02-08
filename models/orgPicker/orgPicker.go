@@ -2,7 +2,6 @@ package orgPicker
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/lipgloss"
 	"fmt"
 	"os/exec"
 	"time"
@@ -12,17 +11,18 @@ var SET_ORG = []string{"config", "set", "--global","target-org"}
 
 type viewState string
 type tickMsg time.Time
-
+type setStateMsg string
 const (
 	IDLE viewState = "IDLE"
 	DONE viewState = "DONE"
 )
 
-type model struct {
+type Model struct {
 	list list.Model
 	delegate *orgItemDelegate
 	state viewState
 	currentOrgAlias string
+	frameSize []int
 }
 
 type orgItem struct {
@@ -33,7 +33,7 @@ func (i orgItem) Title() string       { return i.alias }
 func (i orgItem) Description() string { return i.username }
 func (i orgItem) FilterValue() string { return i.alias }
 
-var docStyle = lipgloss.NewStyle().Margin(1, 1)
+// var docStyle = lipgloss.NewStyle().Margin(1, 1)
 
 func fillOrgs(orgResult Result) map[string]OrgDescriptor {
 	orgs := make(map[string]OrgDescriptor)
@@ -66,7 +66,7 @@ func toggleCheckboxes(list list.Model) {
   list.SetItems(items)
 }
 
-func New() model {
+func New(frameSize... int) Model {
 	raw, err := exec.Command("sf",ORG_LIST...).Output()
 	if err != nil {
 		fmt.Println(err)
@@ -96,7 +96,8 @@ func New() model {
 	orgItemList.SetShowPagination(false)
 	orgItemList.SetShowTitle(false)
 	orgItemList.SetShowHelp(false)
-	return model{
+	return Model{
+		frameSize: frameSize,
 		list: orgItemList,
 		delegate: orgItemDelegate,
 		state: IDLE,
@@ -104,48 +105,54 @@ func New() model {
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch msg.Type {
 				case tea.KeyEnter:
 					m.currentOrgAlias = m.list.SelectedItem().(orgItem).alias
 					toggleCheckboxes(m.list)
-					m.state = DONE
+
 					return m, tea.Sequence(
 						func() tea.Cmd {
 							return func() tea.Msg {
 								SET_ORG = append(SET_ORG, m.currentOrgAlias)
+
 								return exec.Command("sf", SET_ORG...).Run()
 							}
 						}(),
-						tea.Tick(time.Second*2, func(t time.Time) tea.Msg {
-	            return tickMsg(t)
+						tea.Tick(time.Second*1, func(t time.Time) tea.Msg {
+	            return setStateMsg("DONE")
 	          }),
 					)
 				case tea.KeyCtrlC, tea.KeyEsc:
 					return m, tea.Quit
 			}
+			case setStateMsg:
+				m.state = DONE
+				return m, tea.Tick(time.Second*1, func(t time.Time) tea.Msg {
+           return tickMsg(t)
+         })
 			case tickMsg:
         return m, tea.Quit
 			case tea.WindowSizeMsg:
-				h, v := docStyle.GetFrameSize()
+				h, v := m.frameSize[0], m.frameSize[1]
 				m.list.SetSize(msg.Width-h, msg.Height-v)
 	}
 	var listCmd tea.Cmd
 	m.list, listCmd = m.list.Update(msg)
 	return m, listCmd
 }
-func (m model) View() string {
+func (m Model) View() string {
 	switch m.state {
 	case IDLE:
-		return docStyle.Render(m.list.View())
+		return m.list.View()
 	case DONE:
-		return docStyle.Render(fmt.Sprintf("Default org is now : %s", m.currentOrgAlias))
+		return fmt.Sprintf("Default org is now : %s", m.currentOrgAlias)
 	}
 	return ""
 }

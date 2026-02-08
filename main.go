@@ -1,45 +1,77 @@
 package main
 
 import (
-	"os"
-	"strconv"
-
+	"github.com/alexflint/go-arg"
+	genMetadata "github.com/brtheo/sf-tui/models/genMetadata"
 	orgPicker "github.com/brtheo/sf-tui/models/orgPicker"
-	newMetadata "github.com/brtheo/sf-tui/models/newMetadata"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
-func getArg(index int, fallback string) string {
-	if len(os.Args) > 1 {
-		return os.Args[index]
-	}
-	return fallback
-}
-func getIntArg(index int, fallback int) int {
-	arg, err := strconv.Atoi(getArg(index, strconv.Itoa(fallback)))
-	if err != nil {panic(err)}
-	return arg
-}
-func getModelArg(index int, fallback ModelType) ModelType {
-	return ModelType(getIntArg(index, int(fallback)))
-}
-
-type ModelType int
-
+type ModelType string
 const (
-	NewMetadata ModelType = iota
-	OrgPicker
+	OrgPicker ModelType = "org-picker"
+	GenMetadata ModelType = "gen"
 )
+
+var args struct {
+	Model ModelType `arg:"positional" default:"org-picker" help:"Model type (newMetadata, orgPicker)"`
+	MetadataType genMetadata.MetadataType `arg:"-t, --type" help:"Metadata type (LWC, ApexClass, ApexTrigger)"`
+	Output string `arg:"-o, --output" help:"Path to force-app"`
+}
+
+var globalStyle = lipgloss.NewStyle().Margin(1, 1)
+
+type Model struct {
+	subModel tea.Model
+}
+
+func New(modelType ModelType, p *arg.Parser) Model {
+	switch modelType {
+	case GenMetadata:
+		if args.Output == "" || args.MetadataType == "" {
+			p.Fail("Missing required arguments.\nMust provide output path and metadata type.\nSee --help for more information.")
+		}
+		return Model{subModel: genMetadata.New(args.MetadataType, args.Output)}
+	case OrgPicker:
+		return Model{subModel: orgPicker.New(globalStyle.GetFrameSize())}
+	}
+	return Model{}
+}
+
+func (m Model) Init() tea.Cmd {
+	return m.subModel.Init()
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+			case tea.KeyCtrlC, tea.KeyEsc:
+				return m, tea.Quit
+		}
+	}
+	var subModelCmd tea.Cmd
+	m.subModel, subModelCmd = m.subModel.Update(msg)
+	return m, subModelCmd
+}
+
+func (m Model) View() string {
+	return globalStyle.Render(m.subModel.View())
+}
 
 func main() {
-	var model tea.Model
-	switch getModelArg(1, NewMetadata) {
-		case NewMetadata:
-			model = newMetadata.New("LWC")
-		case OrgPicker:
-			model = orgPicker.New()
-
-
-	}
-tea.NewProgram(model, tea.WithAltScreen()).Run()
+	p := arg.MustParse(&args)
+	// var model tea.Model
+	// switch args.Model {
+	// 	case GenMetadata:
+	// 	if args.Output == "" || args.MetadataType == "" {
+	// 		p.Fail("Missing required arguments.\nMust provide output path and metadata type.\nSee --help for more information.")
+	// 	}
+	// 	model = genMetadata.New(args.MetadataType, args.Output)
+	// 	case OrgPicker:
+	// 		model = orgPicker.New()
+	// }
+	model := New(args.Model, p)
+	tea.NewProgram(model, tea.WithAltScreen()).Run()
 }
