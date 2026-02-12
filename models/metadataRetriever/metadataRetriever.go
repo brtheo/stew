@@ -16,7 +16,8 @@ var METADATA_LIST = []string{"org", "list","metadata","--json","--metadata-type"
 type ColumnID int
 
 const (
-	Col_FullName ColumnID = iota
+	Col_Checkbox ColumnID = iota
+	Col_FullName
 	Col_CreatedBy
 	Col_CreatedAt
 	Col_UpdatedBy
@@ -42,6 +43,7 @@ type Model struct {
 	table         table.Model
 	originalRows  []table.Row
 	filterColumn  ColumnID
+	selectedRows  map[int]bool
 }
 
 func (m Model) Init() tea.Cmd {
@@ -54,11 +56,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.WindowSizeMsg:
 			m.table.SetHeight(msg.Height - 7)
 		case tea.KeyMsg:
-			switch msg.String() {
-			case "esc", "ctrl+c":
+			switch msg.Type {
+			case tea.KeyCtrlC, tea.KeyEsc:
 				return m, tea.Quit
-			case "tab":
-				m.filterColumn = (m.filterColumn + 1) % 5
+			case tea.KeyTab:
+				m.filterColumn = (m.filterColumn + 2) % 5
+			case tea.KeyEnter:
+				val, ok := m.selectedRows[m.table.Cursor()]
+				if !ok {
+					m.selectedRows[m.table.Cursor()] = true
+				}
+				m.selectedRows[m.table.Cursor()] = !val
 			}
 	}
 
@@ -67,10 +75,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	searchTerm := strings.ToLower(m.textInput.Value())
 	var filteredRows []table.Row
 
-	for _, row := range m.originalRows {
+	for i, row := range m.originalRows {
 		targetValue := strings.ToLower(row[int(m.filterColumn)])
 		if strings.Contains(targetValue, searchTerm) {
-			filteredRows = append(filteredRows, row)
+			checkbox := "[  ]"
+			if m.selectedRows[i] {
+				checkbox = "[✅]"
+			}
+			filteredRows = append(filteredRows, table.Row{checkbox, row[1], row[2], row[3], row[4], row[5]})
 		}
 	}
 
@@ -97,6 +109,7 @@ func New() Model {
 	ti.Focus()
 
 	columns := []table.Column{
+		{Title: "", Width: 5},
 		{Title: "Metadata name", Width: 40},
 		{Title: "Created by", Width: 15},
 		{Title: "Created at", Width: 30},
@@ -117,6 +130,7 @@ func New() Model {
 	for _, field := range metadata.Result {
 		rows = append(rows,
 			table.Row {
+				"[  ]",
 				field.FullName,
 				field.CreatedByName,
 				field.CreatedDate.String(),
@@ -138,5 +152,6 @@ func New() Model {
 		table:        t,
 		originalRows: rows,
 		filterColumn: Col_FullName, // Default filter
+		selectedRows: make(map[int]bool),
 	}
 }
