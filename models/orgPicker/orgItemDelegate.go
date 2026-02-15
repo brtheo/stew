@@ -26,8 +26,8 @@ var (
 
 func checkbox(defaultOrg bool) string {
 	var checkbox string
-	if checkbox = "[  ]"; defaultOrg {
-		checkbox = "[✅]"
+	if checkbox = "🞅"; defaultOrg {
+		checkbox = "🞊"
 	}
 	return checkboxStyle.Render(checkbox)
 }

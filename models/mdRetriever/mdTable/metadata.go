@@ -1,4 +1,4 @@
-package metadataRetriever
+package mdTable
 
 import "time"
 

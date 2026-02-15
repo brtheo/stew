@@ -19,10 +19,8 @@ const (
 
 type Model struct {
 	list list.Model
-	delegate *orgItemDelegate
 	state viewState
 	currentOrgAlias string
-	frameSize []int
 }
 
 type orgItem struct {
@@ -32,8 +30,6 @@ type orgItem struct {
 func (i orgItem) Title() string       { return i.alias }
 func (i orgItem) Description() string { return i.username }
 func (i orgItem) FilterValue() string { return i.alias }
-
-// var docStyle = lipgloss.NewStyle().Margin(1, 1)
 
 func fillOrgs(orgResult Result) map[string]OrgDescriptor {
 	orgs := make(map[string]OrgDescriptor)
@@ -66,7 +62,7 @@ func toggleCheckboxes(list list.Model) {
   list.SetItems(items)
 }
 
-func New(frameSize... int) Model {
+func New() Model {
 	raw, err := exec.Command("sf",ORG_LIST...).Output()
 	if err != nil {
 		fmt.Println(err)
@@ -89,17 +85,14 @@ func New(frameSize... int) Model {
 			},
 		)
 	}
-	orgItemDelegate := newOrgItemDelegate()
-	orgItemList := list.New(orgItems, orgItemDelegate, 0, 0)
+	orgItemList := list.New(orgItems, newOrgItemDelegate(), 0, 0)
 	orgItemList.SetShowFilter(false)
 	orgItemList.SetShowStatusBar(false)
 	orgItemList.SetShowPagination(false)
 	orgItemList.SetShowTitle(false)
 	orgItemList.SetShowHelp(false)
 	return Model{
-		frameSize: frameSize,
 		list: orgItemList,
-		delegate: orgItemDelegate,
 		state: IDLE,
 		currentOrgAlias: currentOrgAlias,
 	}
@@ -137,8 +130,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tickMsg:
         return m, tea.Quit
 			case tea.WindowSizeMsg:
-				h, v := m.frameSize[0], m.frameSize[1]
-				m.list.SetSize(msg.Width-h, msg.Height-v)
+				m.list.SetSize(msg.Width - 1, msg.Height - 1)
 	}
 	var listCmd tea.Cmd
 	m.list, listCmd = m.list.Update(msg)

@@ -1,0 +1,36 @@
+package mdTable
+
+import (
+	"fmt"
+	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
+
+func (m Model) handleSelectedMdType(msg HasSelectedMdTypeMsg) (tea.Model, tea.Cmd) {
+	m.SelectedMdType = string(msg)
+	m.isFetching = true
+	return m, tea.Batch(
+		m.fetchMdList,
+		m.spinner.Tick,
+	)
+}
+
+func (m Model) handleCheckboxClick() {
+	name := m.Table.SelectedRow()[1]
+	m.setKeyIfNil(m.SelectedMdType)
+	val, ok := m.selectedRows[m.SelectedMdType][name]
+	if !ok {
+		m.selectedRows[m.SelectedMdType][name] = true
+	}
+	m.selectedRows[m.SelectedMdType][name] = !val
+}
+
+
+func (m Model) handleWritePackageXML() {
+	res, err := m.generatePackageXML()
+	if err != nil {
+		fmt.Println("Error generating package XML:", err)
+	}
+	os.WriteFile("./manifest/package.xml", []byte(res), os.ModePerm)
+}
