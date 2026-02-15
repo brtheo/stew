@@ -10,7 +10,7 @@
 
 ### 1. Org Picker
 Easily switch between your authenticated Salesforce orgs.
-- Lists all authenticated orgs (Scratch Orgs, Sandboxes, Dev Hubs, Sandboxes, etc.).
+- Lists all authenticated orgs (Scratch Orgs, Sandboxes, Dev Hubs, etc.).
 - Displays aliases, usernames, and instance URLs.
 - Visual indicator for the current default org.
 - Quick selection to update your global `target-org` with immediate confirmation feedback.
@@ -22,6 +22,16 @@ Streamline the creation of new Salesforce metadata with a simple, interactive fo
 - **Apex Triggers**: Create new Apex triggers with SObject selection.
 - Input validation to ensure metadata names are not empty.
 - Real-time feedback on successful creation.
+
+### 3. Metadata Retriever
+Browse, search, and select metadata from your Salesforce org to generate deployment packages.
+- **Two-step wizard interface**: First select a metadata type, then browse all available metadata of that type.
+- **Interactive metadata type picker**: Easily navigate and select from all available metadata types.
+- **Searchable metadata table**: Filter metadata by name or other properties in real-time.
+- **Metadata selection**: Check/uncheck individual metadata items for inclusion in your deployment package.
+- **Package.xml generation**: Automatically generate a valid `package.xml` file with your selected metadata.
+- **Live filtering**: Search and filter metadata as you type.
+- **Real-time status**: Animated spinner shows when metadata is being fetched from your org.
 
 ## Prerequisites
 
@@ -36,66 +46,3 @@ Clone the repository and build the binary:
 git clone https://github.com/brtheo/sf-tui.git
 cd sf-tui
 go build -o sf-tui
-```
-
-## Usage
-
-### Org Picker (Default)
-Launch the org picker to switch between authenticated orgs:
-
-```bash
-./sf-tui
-# or explicitly:
-./sf-tui org-picker
-```
-
-Navigate using arrow keys and press **Enter** to set the selected org as the default target-org.
-
-### Metadata Generator
-Generate new Salesforce metadata with specified type and output path:
-
-```bash
-./sf-tui gen --type LWC --output /path/to/force-app
-./sf-tui gen --type ApexClass --output /path/to/force-app
-./sf-tui gen --type ApexTrigger --output /path/to/force-app
-```
-
-**Supported Metadata Types:**
-- `LWC`: Lightning Web Components
-- `ApexClass`: Apex Classes
-- `ApexTrigger`: Apex Triggers
-
-The generator will prompt you for a name and create the metadata in the specified output directory.
-
-## Keybindings
-
-- **↑ / ↓ (Arrows) / J / K**: Navigate lists and options.
-- **Enter**: Confirm selection or submit input.
-- **Esc / Ctrl+C**: Quit the application.
-
-## Project Structure
-
-```
-sf-tui/
-├── main.go              # Entry point with CLI argument parsing
-├── models/
-│   ├── orgPicker/       # Org selection and switching logic
-│   │   ├── orgPicker.go
-│   │   ├── orgItemDelegate.go
-│   │   └── orgs.go
-│   └── genMetadata/     # Metadata generation logic
-│       └── genMetadata.go
-└── README.md
-```
-
-## Roadmap
-
-- [ ] Support for additional metadata types (custom objects, fields, etc.).
-- [ ] Batch metadata creation.
-- [ ] Integration with org deployments and log viewing.
-- [ ] Enhanced error handling with detailed user feedback.
-- [ ] Configuration file support for default output paths.
-
-## License
-
-[MIT]
