@@ -32,7 +32,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 		case tea.WindowSizeMsg:
-			m.mdTypePicker.List.SetSize(msg.Width - 1, msg.Height - 1)
+			m.mdTypePicker.List.SetSize(msg.Width - 1, msg.Height - 2)
 			m.mdTable.Table.SetHeight(msg.Height - 7)
 		case tea.KeyMsg:
 			switch msg.Type {
@@ -70,10 +70,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	switch m.wizardStep {
 		case PickMetadataType:
-			return fmt.Sprintf(
-				"Choose metadata type\n%s",
-				m.mdTypePicker.View(),
-			)
+			return m.mdTypePicker.View()
+
 		case PickMetadataRecord:
 			if m.selectedMetadataType == "" {
 				return "Select metadata type first"

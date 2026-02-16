@@ -3,6 +3,7 @@ package mdTable
 import (
 	"fmt"
 	"os/exec"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -31,7 +32,9 @@ func (m Model) getRowsWithCheckboxes (searchTerm string) (filteredRows []table.R
 
 
 func (m Model) fetchMdList() tea.Msg {
-	raw, err := exec.Command("sf","org","list","metadata","--json","--metadata-type", m.SelectedMdType).Output()
+	raw, err := exec.Command(
+		"sf","org","list","metadata","--json","--metadata-type", m.SelectedMdType,
+	).Output()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -39,6 +42,10 @@ func (m Model) fetchMdList() tea.Msg {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	sort.Slice(metadata.Result, func(i, j int) bool {
+		return metadata.Result[i].LastModifiedDate.After(metadata.Result[j].LastModifiedDate)
+	})
 
 	var rows = []table.Row{}
 	for _, field := range metadata.Result {

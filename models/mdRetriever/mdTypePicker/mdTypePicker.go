@@ -1,32 +1,14 @@
 package mdTypePicker
 
 import (
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/brtheo/sf-tui/models/mdRetriever/shared"
 )
 
 type HasPickedTypeMsg string
 
-type keyMap struct {
-	Left  key.Binding
-	Right key.Binding
-}
-
-func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Left, k.Right}
-}
-
-var NavKeys = keyMap{
-	Left: key.NewBinding(
-		key.WithKeys("left", "h"),
-		key.WithHelp("←/h", "navigate steps"),
-	),
-	Right: key.NewBinding(
-		key.WithKeys("right", "l"),
-		key.WithHelp("→/l", "navigate steps"),
-	),
-}
 
 type Model struct {
 	List list.Model
@@ -41,8 +23,8 @@ func New() Model {
 	)
 	list.Title = "Select Metadata Type"
 	list.SetShowStatusBar(false)
-	list.AdditionalShortHelpKeys = NavKeys.ShortHelp
-	list.AdditionalFullHelpKeys = NavKeys.ShortHelp
+	list.AdditionalShortHelpKeys = shared.NavKeys.ShortHelp
+	list.AdditionalFullHelpKeys = shared.NavKeys.ShortHelp
 	return Model{List: list}
 }
 

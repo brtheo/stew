@@ -36,13 +36,7 @@ type Result struct {
 }
 
 type ManageableState string
-
 const (
 	Installed ManageableState = "installed"
 	Unmanaged ManageableState = "unmanaged"
 )
-
-// type MetadataType string
-// const (
-// 	ApexClass MetadataType = "ApexClass"
-// )

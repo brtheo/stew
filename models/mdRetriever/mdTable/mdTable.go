@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/brtheo/sf-tui/models/mdRetriever/shared"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -56,6 +58,7 @@ type Model struct {
 	filterInput textinput.Model
 	Table         table.Model
 	spinner       spinner.Model
+	help          help.Model
 	originalRows  []table.Row
 	filterColumn  ColumnID
 	selectedRows  map[string]map[string]bool
@@ -82,6 +85,7 @@ func New() Model {
 		filterInput   : filterInput,
 		Table         : mdTable,
 		spinner       : loader,
+		help          : help.New(),
 		originalRows  : []table.Row{},
 		filterColumn  : Col_FullName,
 		selectedRows  : make(map[string]map[string]bool),
@@ -138,10 +142,11 @@ func (m Model) View() string {
 		)
 	}
 	return fmt.Sprintf(
-		"Filtering %s by: %s (Press [Tab] to switch)\n Input: %s\n\n%s\n",
+		"Filtering %s by: %s (Press [Tab] to switch)\n Input: %s\n\n%s\n%s",
 		m.SelectedMdType,
 		highlightStyle.Render(m.filterColumn.String()),
 		m.filterInput.View(),
 		baseStyle.Render(m.Table.View()),
+		m.help.View(shared.CtrlKeys),
 	)
 }
