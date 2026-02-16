@@ -1,17 +1,23 @@
 package orgPicker
+
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/bubbles/list"
 	"fmt"
 	"os/exec"
-	"time"
+
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 var ORG_LIST = []string{"org", "list", "--json"}
 var SET_ORG = []string{"config", "set","target-org"}
 
+type fetchOrgsMsg struct {
+	orgs map[string]OrgDescriptor
+	err  error
+}
+
 type viewState string
-type tickMsg time.Time
-type setStateMsg string
 const (
 	IDLE viewState = "IDLE"
 	DONE viewState = "DONE"
@@ -19,8 +25,11 @@ const (
 
 type Model struct {
 	list list.Model
+	spinner spinner.Model
 	state viewState
 	currentOrgAlias string
+	orgDescriptors    map[string]OrgDescriptor
+	loading bool
 }
 
 type orgItem struct {
@@ -62,53 +71,85 @@ func toggleCheckboxes(list list.Model) {
   list.SetItems(items)
 }
 
-func New() Model {
-	raw, err := exec.Command("sf",ORG_LIST...).Output()
-	if err != nil {
-		fmt.Println(err)
-	}
-	orgs, err := UnmarshalOrgs(raw)
-	if err != nil {
-		fmt.Println(err)
-	}
+func (m *Model) handleFetchOrgsMsg(msg fetchOrgsMsg) {
+	m.orgDescriptors = msg.orgs
+	m.currentOrgAlias = findDefaultOrgAlias(msg.orgs)
+	m.loading = false
 
-	orgDescriptors := fillOrgs(orgs.Result)
-	currentOrgAlias := findDefaultOrgAlias(orgDescriptors)
 	var orgItems = []list.Item{}
-	for _, org := range orgDescriptors {
+	for _, org := range msg.orgs {
 		orgItems = append(orgItems,
-			orgItem {
-				alias: org.Alias,
-				isDefaultOrg: org.Alias == currentOrgAlias,
-				username: org.Username,
-				instanceUrl: org.InstanceURL,
+			orgItem{
+				alias:        org.Alias,
+				isDefaultOrg: org.Alias == m.currentOrgAlias,
+				username:     org.Username,
+				instanceUrl:  org.InstanceURL,
 			},
 		)
 	}
-	orgItemList := list.New(orgItems, newOrgItemDelegate(), 0, 0)
+	m.loading = false
+	m.list.SetItems(orgItems)
+}
+
+func New() Model {
+	orgItemList := list.New([]list.Item{}, newOrgItemDelegate(), 0, 0)
 	orgItemList.SetShowFilter(false)
 	orgItemList.SetShowStatusBar(false)
 	orgItemList.SetShowPagination(false)
 	orgItemList.SetShowTitle(false)
 	orgItemList.SetShowHelp(false)
+
+	loader := spinner.New()
+  loader.Spinner = spinner.MiniDot
+  loader.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+  loader.Style.Align(lipgloss.Top)
+
+
 	return Model{
 		list: orgItemList,
 		state: IDLE,
-		currentOrgAlias: currentOrgAlias,
+		spinner: loader,
+		loading: true,
+		orgDescriptors:  make(map[string]OrgDescriptor),
+		currentOrgAlias: "",
+	}
+}
+
+func fetchOrgsCmd() tea.Cmd {
+	return func() tea.Msg {
+		raw, err := exec.Command("sf", ORG_LIST...).Output()
+		if err != nil {
+			return fetchOrgsMsg{err: err}
+		}
+
+		orgs, err := UnmarshalOrgs(raw)
+		if err != nil {
+			return fetchOrgsMsg{err: err}
+		}
+
+		orgDescriptors := fillOrgs(orgs.Result)
+		return fetchOrgsMsg{orgs: orgDescriptors, err: nil}
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return tea.Batch(m.spinner.Tick, fetchOrgsCmd(),)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+		case fetchOrgsMsg:
+			if msg.err != nil {
+				fmt.Println("Error fetching orgs:", msg.err)
+				return m, tea.Quit
+			}
+			m.handleFetchOrgsMsg(msg)
 		case tea.KeyMsg:
 			switch msg.Type {
 				case tea.KeyEnter:
 					m.currentOrgAlias = m.list.SelectedItem().(orgItem).alias
 					toggleCheckboxes(m.list)
+					m.state = DONE
 					return m, func() tea.Cmd {
 						return func() tea.Msg {
 							SET_ORG = append(SET_ORG, m.currentOrgAlias)
@@ -116,29 +157,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							if err != nil {
 								fmt.Println("Error setting org:", err)
 							}
-							m.state = DONE
-							return setStateMsg("DONE")
+							return tea.Quit
 						}
 					}()
 				case tea.KeyCtrlC, tea.KeyEsc:
 					return m, tea.Quit
 			}
-			case setStateMsg:
-				return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
-           return tickMsg(t)
-         })
-			case tickMsg:
-        return m, tea.Quit
 			case tea.WindowSizeMsg:
-				m.list.SetSize(msg.Width - 1, msg.Height - 1)
+				m.list.SetSize(msg.Width - 2, msg.Height - 2)
 	}
-	var listCmd tea.Cmd
+
+	var listCmd, spinnerCmd tea.Cmd
 	m.list, listCmd = m.list.Update(msg)
-	return m, listCmd
+	m.spinner, spinnerCmd = m.spinner.Update(msg)
+	return m, tea.Batch(listCmd, spinnerCmd)
 }
+
 func (m Model) View() string {
 	switch m.state {
 	case IDLE:
+		if m.loading {
+			return m.spinner.View()
+		}
 		return m.list.View()
 	case DONE:
 		return fmt.Sprintf("Default ☁️ org is now : %s", m.currentOrgAlias)
