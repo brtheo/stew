@@ -1,10 +1,11 @@
 package orgPicker
 
 import (
-	"io"
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
+	"io"
+
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
