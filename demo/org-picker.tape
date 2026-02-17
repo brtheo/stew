@@ -1,4 +1,4 @@
-Output showcase.gif
+Output org-picker.gif
 
 Set FontSize 14
 Set FontFamily "Ellograph CF"
