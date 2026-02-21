@@ -1,7 +1,9 @@
 package mdTable
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"sort"
 	"strings"
@@ -73,12 +75,12 @@ func (m Model) setKeyIfNil(key string) {
 
 func (m Model) generatePackageXML() (string, error) {
 	const packageTemplate = `<?xml version="1.0" encoding="UTF-8"?>
-<Package xmlns="http://soap.sforce.com/2006/04/metadata">{{range $mdType, $mdNames := .}}
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">{{range $mdType, $mdNames := .values}}
     <types>{{range $index, $mdName := $mdNames}}
       	<members>{{$mdName}}</members>{{end}}
         <name>{{$mdType}}</name>
     </types>{{end}}
-    <version>65.0</version>
+    <version>{{.version}}</version>
 </Package>`
 
 	tmpl, err := template.New("package").Parse(packageTemplate)
@@ -100,8 +102,24 @@ func (m Model) generatePackageXML() (string, error) {
 			}
 		}
 	}
+	apiVersion := "60.0"
 
-	err = tmpl.Execute(&result, values)
+	data, err := os.ReadFile("./sfdx-project.json")
+	if err == nil {
+		sfdxProject := map[string]any{}
+		if err := json.Unmarshal(data, &sfdxProject); err == nil {
+			if version, ok := sfdxProject["sourceApiVersion"]; ok {
+				apiVersion = version.(string)
+			}
+		}
+	}
+
+	args := map[string]any{
+		"version": apiVersion,
+		"values":  values,
+	}
+
+	err = tmpl.Execute(&result, args)
 	if err != nil {
 		return "", err
 	}

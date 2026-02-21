@@ -32,5 +32,11 @@ func (m Model) handleWritePackageXML() {
 	if err != nil {
 		fmt.Println("Error generating package XML:", err)
 	}
+
+	if _, err := os.Stat("./manifest"); os.IsNotExist(err) {
+		if err := os.Mkdir("./manifest", os.ModePerm); err != nil {
+			panic(err)
+		}
+	}
 	os.WriteFile("./manifest/package.xml", []byte(res), os.ModePerm)
 }

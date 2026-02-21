@@ -142,7 +142,7 @@ func (m Model) View() string {
 		)
 	}
 	return fmt.Sprintf(
-		"Filtering %s by: %s (Press [Tab] to switch)\n Input: %s\n\n%s\n%s",
+		"Filtering %s by: %s\n Input: %s\n\n%s\n%s",
 		m.SelectedMdType,
 		highlightStyle.Render(m.filterColumn.String()),
 		m.filterInput.View(),
