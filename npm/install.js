@@ -4,7 +4,7 @@
 // maps process.arch to GOARCH
 let GOARCH_MAP = {
   'arm64': 'arm64',
-  'amd64': 'amd64'
+  'x64': 'amd64'
 };
 
 let GOOS_MAP = {
