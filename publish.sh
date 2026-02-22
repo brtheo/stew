@@ -12,7 +12,7 @@ cat << EOF > npm/package.json
 {
   "name": "@brtheo/stew",
   "version": "$VERSION",
-  "description": "A dumb process manager",
+  "description": "Stew is a TUI for the Salesforce CLI",
   "main": "index.js",
   "scripts": {
     "postinstall": "node install.js"
