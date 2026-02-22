@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/alexflint/go-arg"
 	"github.com/brtheo/sf-tui/models/genMetadata"
 	"github.com/brtheo/sf-tui/models/mdRetriever"
@@ -9,6 +11,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var VersionNumber = "dev"
+
 type ModelType string
 const (
 	OrgPicker ModelType = "org-picker"
@@ -16,10 +20,16 @@ const (
 	MdRetriever ModelType = "metadata-retriever"
 )
 
-var args struct {
+type Args struct {
 	Model ModelType `arg:"positional" default:"org-picker" help:"Model type (newMetadata, orgPicker)"`
 	MetadataType newMetadata.MetadataType `arg:"-t, --type" help:"Metadata type (LWC, ApexClass, ApexTrigger)"`
 	Output string `arg:"-o, --output" help:"Path to force-app"`
+}
+
+var args Args
+
+func (Args) Version() string {
+	return fmt.Sprintf("stew version %s", VersionNumber)
 }
 
 var globalStyle = lipgloss.NewStyle().Margin(1, 1)

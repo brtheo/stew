@@ -1,6 +1,6 @@
-# sf-tui
+# stew
 
-`sf-tui` is a terminal user interface (TUI) for the Salesforce CLI (`sf`), built with Go and the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework. It aims to provide a more interactive and visual way to manage Salesforce environments and metadata directly from the command line.
+`stew` is a terminal user interface (TUI) for the Salesforce CLI (`sf`), built with Go and the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework. It aims to provide a more interactive and visual way to manage Salesforce environments and metadata directly from the command line.
 
 ## Features
 
@@ -36,6 +36,6 @@ Browse, search, and select metadata from your Salesforce org to generate a packa
 Clone the repository and build the binary:
 
 ```bash
-git clone https://github.com/brtheo/sf-tui.git
-cd sf-tui
-go build -o sf-tui
+git clone https://github.com/brtheo/stew.git
+cd stew
+./build.sh

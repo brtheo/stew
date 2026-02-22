@@ -1,0 +1,22 @@
+{
+  "name": "@brtheo/stew",
+  "version": "v0.1.0",
+  "description": "A dumb process manager",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "bin": {
+    "stew": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brtheo/stew.git"
+  },
+  "author": "Brossier théo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brtheo/stew/issues"
+  },
+  "homepage": "https://github.com/brtheo/stew"
+}
