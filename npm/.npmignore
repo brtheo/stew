@@ -1,0 +1,5 @@
+../demo
+../.git/
+../.gitignore
+../publish.sh
+../build.sh
