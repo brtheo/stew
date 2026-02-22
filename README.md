@@ -2,6 +2,22 @@
 
 `stew` is a terminal user interface (TUI) for the Salesforce CLI (`sf`), built with Go and the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework. It aims to provide a more interactive and visual way to manage Salesforce environments and metadata directly from the command line.
 
+## Installation
+
+Can be installed via npm (requires sudo on linux)
+
+```bash
+npm install -g @brtheo/stew
+```
+
+Clone the repository and build the binary:
+
+```bash
+git clone https://github.com/brtheo/stew.git
+cd stew
+./build.sh
+```
+
 ## Features
 
 ### 1. Org Picker
@@ -30,12 +46,3 @@ Browse, search, and select metadata from your Salesforce org to generate a packa
 
 - [Go](https://go.dev/doc/install) (1.19 or later)
 - [Salesforce CLI (sf)](https://developer.salesforce.com/tools/sfdxcli) installed and authenticated with at least one org.
-
-## Installation
-
-Clone the repository and build the binary:
-
-```bash
-git clone https://github.com/brtheo/stew.git
-cd stew
-./build.sh
