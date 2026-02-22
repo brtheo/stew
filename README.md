@@ -2,6 +2,11 @@
 
 `stew` is a terminal user interface (TUI) for the Salesforce CLI (`sf`), built with Go and the [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework. It aims to provide a more interactive and visual way to manage Salesforce environments and metadata directly from the command line.
 
+Stew was built with the goal of being an easy-to-integrate UI for interacting with the SF CLI in code editors other than VS Code, such as **Zed**, by leveraging its tasks feature.
+
+You can checkout [SF Zed Tasks](https://github.com/brtheo/sf-zed-tasks) a comprehensive collection of `sf` and `stew` **Zed tasks**.
+.
+
 ## Installation
 
 Can be installed via npm (requires sudo on linux)
@@ -41,6 +46,15 @@ Browse, search, and select metadata from your Salesforce org to generate a packa
 - Browse all available metadata of that type and pick one or more items
 - Generate a package.xml file with the selected metadata.
 ![Metadata Retriever](./demo/metadata-retriever.gif)
+
+## Roadmap
+
+- [ ] gen aura related stuff
+- [ ] gen vf page
+- [ ] gen project 
+- [ ] gen test suite
+- [ ] authorize an org/dev hub
+- [ ] get apex logs
 
 ## Prerequisites
 
