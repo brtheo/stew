@@ -14,12 +14,12 @@ let GOOS_MAP = {
 };
 
 if (!(process.arch in GOARCH_MAP)) {
-  console.error(`Sorry this is only packaged for ${GOARCH_MAP} at the moment.`);
+  console.error(`Sorry this is only packaged for ${Object.keys(GOARCH_MAP)} at the moment. Current arch: ${process.arch}`);
   process.exit(1);
 }
 
 if (!(process.platform in GOOS_MAP)) {
-  console.error(`Sorry this is only packaged for ${GOOS_MAP} at the moment.`);
+  console.error(`Sorry this is only packaged for ${Object.keys(GOOS_MAP)} at the moment. Current os : ${process.platform}`);
   process.exit(1);
 }
 
