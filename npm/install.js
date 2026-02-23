@@ -26,7 +26,8 @@ if (!(process.platform in GOOS_MAP)) {
 
 const arch = GOARCH_MAP[process.arch];
 const platform = GOOS_MAP[process.platform];
-const installTarget = `stew-${platform}-${arch}`;
+const ext = process.platform == 'windows' ? '.exe' : ''
+const installTarget = `stew-${platform}-${arch}${ext}`;
 
 // "Install"
 const { exec } = require('child_process');
