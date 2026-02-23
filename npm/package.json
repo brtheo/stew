@@ -1,6 +1,6 @@
 {
   "name": "@brtheo/stew",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Stew is a TUI for the Salesforce CLI",
   "main": "index.js",
   "scripts": {
