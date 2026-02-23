@@ -30,7 +30,7 @@ const installTarget = `stew-${platform}-${arch}`;
 
 // "Install"
 const { exec } = require('child_process');
-exec(`cp bin/${installTarget} bin/stew-bin`, (err) => {
+exec(`${platform == 'windows' ? 'copy' : 'cp'} bin/${installTarget} bin/stew-bin`, (err) => {
   if (err) {
     console.error(err);
     process.exit(1);
