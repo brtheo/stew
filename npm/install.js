@@ -9,7 +9,8 @@ let GOARCH_MAP = {
 
 let GOOS_MAP = {
   'darwin': 'darwin',
-  'windows': 'windows',
+  'win32': 'windows',
+  'win64': 'windows',
   'linux': 'linux'
 };
 
