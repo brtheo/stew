@@ -7,7 +7,7 @@ const GOOS_MAP = {
   'win64': 'windows',
   'linux': 'linux'
 };
-
+const platform = GOOS_MAP[process.platform];
 const ext = platform == 'windows' ? '.exe' : ''
 
 const stewPath = path.dirname(require.resolve('@brtheo/stew'));
