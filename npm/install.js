@@ -29,6 +29,6 @@ const ext = platform == 'windows' ? '.exe' : ''
 const installTarget = `stew-${platform}-${arch}${ext}`;
 
 const sourcePath = path.join(__dirname, 'bin', installTarget);
-const destPath = path.join(__dirname, 'bin', 'stew-bin');
+const destPath = path.join(__dirname, 'bin', `stew-bin${ext}`);
 
 fs.copyFileSync(sourcePath, destPath);
