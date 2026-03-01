@@ -23,6 +23,7 @@ const (
 type Args struct {
 	Model ModelType `arg:"positional" default:"org-picker" help:"Model type (newMetadata, orgPicker)"`
 	MetadataType newMetadata.MetadataType `arg:"-t, --type" help:"Metadata type (LWC, ApexClass, ApexTrigger)"`
+	Editor string `arg:"-e, --editor" help:"Editor to open generated files"`
 	Output string `arg:"-o, --output" help:"Path to force-app"`
 }
 
@@ -44,7 +45,7 @@ func New(modelType ModelType, p *arg.Parser) Model {
 			if args.Output == "" || args.MetadataType == "" {
 				p.Fail("Missing required arguments.\nMust provide output path and metadata type.\nSee --help for more information.")
 			}
-			return Model{subModel: newMetadata.New(args.MetadataType, args.Output)}
+			return Model{subModel: newMetadata.New(args.MetadataType, args.Output, args.Editor)}
 		case OrgPicker:
 			return Model{subModel: orgPicker.New()}
 		case MdRetriever:

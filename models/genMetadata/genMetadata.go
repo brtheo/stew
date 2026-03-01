@@ -14,6 +14,9 @@ type MetadataType string
 const (
 	LWC MetadataType = "LWC"
 	ApexClass MetadataType = "ApexClass"
+	Aura MetadataType = "Aura"
+	AuraEvent MetadataType = "AuraEvent"
+	AuraApp MetadataType = "AuraApp"
 	ApexTrigger MetadataType = "ApexTrigger"
 )
 
@@ -28,7 +31,41 @@ const (
 	TRIGGER_SOBJECT triggerState = "NEED_SOBJECT"
 )
 
+var mdFolder = map[MetadataType]string{
+	LWC: "lwc",
+	Aura: "aura",
+	AuraEvent: "aura",
+	AuraApp: "aura",
+	ApexTrigger: "triggers",
+	ApexClass: "classes",
+}
+var mdCmdAliasType = map[MetadataType]string{
+	LWC: "component --type lwc",
+	Aura: "component",
+	AuraEvent: "event",
+	AuraApp: "app",
+	ApexTrigger: "trigger",
+	ApexClass: "class",
+}
+var mdCmdAlias = map[MetadataType]string{
+	LWC: "lightning",
+	Aura: "lightning",
+	AuraEvent: "lightning",
+	AuraApp: "lightning",
+	ApexTrigger: "apex",
+	ApexClass: "apex",
+}
+var mdFileExtension = map[MetadataType]string{
+	LWC: "js",
+	Aura: "js",
+	AuraEvent: "js",
+	AuraApp: "js",
+	ApexTrigger: "trigger",
+	ApexClass: "cls",
+}
+
 type Model struct {
+	editor string
 	input textinput.Model
 	metadataType MetadataType
 	output, name, sobject string
@@ -41,18 +78,30 @@ func (m Model) sfCmdAndLeave(args []string) (Model, tea.Cmd) {
 		func() tea.Cmd {
 			return func() tea.Msg {
 				exec.Command("sf", args...).Run()
+				if m.editor != "" {
+					mTypeFolder := mdFolder[m.metadataType]
+					mdFileExtension := mdFileExtension[m.metadataType]
+					var cmd string
+					if m.metadataType == ApexClass || m.metadataType == ApexTrigger {
+						cmd = fmt.Sprintf("%s/%s/%s.%s",m.output,mTypeFolder,m.name,mdFileExtension)
+					} else {
+						cmd = fmt.Sprintf("%s/%s/%s/%s.%s",m.output,mTypeFolder,m.name,m.name,mdFileExtension)
+					}
+					exec.Command(m.editor,
+						cmd,
+					"-").Run()
+				}
 				return nil
 			}
 		}(), tea.Quit,
 	)
 }
 
-func generateLWC(name, path string) []string {
-	raw := fmt.Sprintf("lightning generate component --name %s --type lwc --output-dir %s/lwc", name, path)
-	return strings.Split(raw, " ")
-}
-func generateApexClass(name, path string) []string {
-	raw := fmt.Sprintf("apex generate class --name %s --output-dir %s/classes", name, path)
+func gen(name, path string, rawType MetadataType) []string {
+	mType := mdCmdAliasType[rawType]
+	mFolder := mdFolder[rawType]
+	mAlias := mdCmdAlias[rawType]
+	raw := fmt.Sprintf("%s generate %s --name %s --output-dir %s/%s", mAlias, mType, name, path, mFolder)
 	return strings.Split(raw, " ")
 }
 func generateApexTrigger(name,sobject, path string) []string {
@@ -60,13 +109,14 @@ func generateApexTrigger(name,sobject, path string) []string {
 	return strings.Split(raw, " ")
 }
 
-func New(metadataType MetadataType, output string) Model {
+func New(metadataType MetadataType, output, editor string) Model {
 	input := textinput.New()
 	input.Width = 50
 	input.Placeholder = fmt.Sprintf("Enter %s name", metadataType)
 	input.Focus()
 
 	return Model{
+		editor: editor,
 		input: input,
 		metadataType: metadataType,
 		output: output,
@@ -98,9 +148,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 					switch m.metadataType {
 						case LWC:
-							return m.sfCmdAndLeave(generateLWC(m.name, m.output))
+							return m.sfCmdAndLeave(gen(m.name, m.output, m.metadataType))
+						case Aura, AuraEvent, AuraApp:
+							return m.sfCmdAndLeave(gen(m.name, m.output, m.metadataType))
 						case ApexClass:
-							return m.sfCmdAndLeave(generateApexClass(m.name, m.output))
+							return m.sfCmdAndLeave(gen(m.name, m.output, m.metadataType))
 						case ApexTrigger:
 							switch m.triggerState {
 								case TRIGGER_NAME:
