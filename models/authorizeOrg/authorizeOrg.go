@@ -19,8 +19,10 @@ const (
 type Model struct {
 	list list.Model
 	input textinput.Model
-	output, name, sobject string
+	alias string
+	orgType OrgType
 	state viewState
+	
 }
 
 func New() Model {
@@ -39,6 +41,7 @@ func New() Model {
 
 	return Model{
 		list: list,
+		
 		input: input,
 		state: PICK_ORG_TYPE,
 	}
@@ -55,10 +58,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyMsg:
 			switch msg.Type {
 				case tea.KeyEnter:
-				  value := strings.TrimSpace(m.input.Value())
-			 		if value == "" {
-						m.state = ERR
+					switch m.state {
+					case PICK_ORG_TYPE:
+						m.state = SET_ALIAS
+						m.orgType = OrgType(m.list.SelectedItem().(OrgTypeItem).title)
 						return m, nil
+					case SET_ALIAS:
+					  value := strings.TrimSpace(m.input.Value())
+				 		if value == "" {
+							m.state = ERR
+							return m, nil
+						}
 					}
 			}
 	}

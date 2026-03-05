@@ -3,6 +3,12 @@ package authorizeOrg
 import (
 	"github.com/charmbracelet/bubbles/list"
 )
+type OrgType string
+const (
+	Production OrgType = "Production"
+	Sandbox    OrgType = "Sandbox"
+	CustomURL  OrgType = "Custom URL"
+)
 type OrgTypeItem struct {
 	title string
 	description string
