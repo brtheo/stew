@@ -36,6 +36,9 @@ Streamline the creation of new Salesforce metadata with a simple, interactive fo
 - **Lightning Web Components (LWC)**: Generate new LWC components.
 - **Apex Classes**: Create new Apex classes.
 - **Apex Triggers**: Create new Apex triggers with SObject selection.
+- **Aura Components**: Generate new Aura components.
+- **Aura Events**: Generate new Aura events.
+- **Aura Applications**: Generate new Aura applications.
 - Input validation to ensure metadata names are not empty.
 - Real-time feedback on successful creation.
 ![Gen Metadata](./demo/gen-metadata.gif)
@@ -47,13 +50,16 @@ Browse, search, and select metadata from your Salesforce org to generate a packa
 - Generate a package.xml file with the selected metadata.
 ![Metadata Retriever](./demo/metadata-retriever.gif)
 
+### 4. Authorize an Org
+Wizard to authorize an org.
+
 ## Roadmap
 
-- [ ] gen aura related stuff
+- [*] gen aura related stuff
 - [ ] gen vf page
 - [ ] gen project 
 - [ ] gen test suite
-- [ ] authorize an org/dev hub
+- [*] authorize an org/dev hub
 - [ ] get apex logs
 
 ## Prerequisites
