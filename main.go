@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexflint/go-arg"
 	"github.com/brtheo/sf-tui/models/authorizeOrg"
+	"github.com/brtheo/sf-tui/models/genProject"
 	"github.com/brtheo/sf-tui/models/genMetadata"
 	"github.com/brtheo/sf-tui/models/mdRetriever"
 	"github.com/brtheo/sf-tui/models/orgPicker"
@@ -20,6 +21,7 @@ const (
 	GenMetadata ModelType = "gen"
 	MdRetriever ModelType = "metadata-retriever"
 	AuthorizeOrg ModelType = "authorize-org"
+	GenProject ModelType = "gen-project"
 )
 
 type Args struct {
@@ -54,6 +56,8 @@ func New(modelType ModelType, p *arg.Parser) Model {
 			return Model{subModel: mdRetriever.New()}
 		case AuthorizeOrg:
 			return Model{subModel: authorizeOrg.New()}
+		case GenProject:
+			return Model{subModel: genProject.New(args.Output, args.Editor)}
 	}
 	return Model{}
 }
