@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strings"
 
-	// "github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -24,7 +23,6 @@ type Model struct {
 	input textinput.Model
 	output, name, path  string
 	state viewState
-	// filePicker list.Model
 }
 
 func New(output, editor string) Model {
@@ -33,14 +31,7 @@ func New(output, editor string) Model {
 	input.Placeholder = "Enter Project Name"
 	input.Focus()
 
-	// filePicker := list.New(
-	// 	fillDirItems(homeDir),
-	// 	list.NewDefaultDelegate(),
-	// 	0,
-	// 	0,
-	// )
 	return Model{
-		// filePicker: filePicker,
 		editor: editor,
 		input: input,
 		output: output,
@@ -67,16 +58,9 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 		case genProjFinishedMsg:
-			// fmt.Print("hello ?")
-			// cmd := strings.Split(fmt.Sprintf("%s/%s/", m.path, m.name), " ")
-			// exec.Command(m.editor, cmd...).Run()
 			return m, tea.Quit
-		// case tea.WindowSizeMsg:
-			// m.filePicker.SetHeight(msg.Height - 1)
 		case tea.KeyMsg:
 			switch msg.Type {
-				// case tea.KeyLeft:
-					// m.filePicker.SetItems(fillDirItems(m.filePicker.SelectedItem().(DirItem).title))
 				case tea.KeyEnter:
 					if m.state == IDLE {
 						value := strings.TrimSpace(m.input.Value())
@@ -93,18 +77,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.path = strings.TrimSpace(m.input.Value())
 						cmd := strings.Split(fmt.Sprintf("project generate --name %s -d %s --manifest", m.name, m.path), " ")
-						 exec.Command("sf", cmd...).Run()
-							// if err ==  nil {
-							// 	exec.Command(m.editor, fmt.Sprintf("~/Code/SF/%s", m.name)).Run()
-							// 	return m, tea.Quit
-							// }
-						// return m, runGenProjCommand(cmd)
+						return m, tea.Sequence(
+							func() tea.Cmd {
+								exec.Command("sf", cmd...).Run()
+								return nil
+							}(),
+							tea.Quit,
+						)
 					}
 			}
 	}
 	var inputCmd tea.Cmd
 	m.input, inputCmd = m.input.Update(msg)
-	// m.filePicker, fpCmd  = m.filePicker.Update(msg)
 	return m, tea.Batch(inputCmd)
 }
 
@@ -121,8 +105,6 @@ func (m Model) View() string {
 	switch m.state {
 	case IDLE, PICK_LOCATION:
 		return input
-	// case PICK_LOCATION:
-	// 	return m.filePicker.View()
 	case ERR:
 		return lipgloss.JoinVertical(lipgloss.Left, input, errMsg)
 	}
