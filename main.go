@@ -9,6 +9,7 @@ import (
 	"github.com/brtheo/sf-tui/models/genMetadata"
 	"github.com/brtheo/sf-tui/models/mdRetriever"
 	"github.com/brtheo/sf-tui/models/orgPicker"
+	"github.com/brtheo/sf-tui/standalones/diff"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -22,6 +23,7 @@ const (
 	MdRetriever ModelType = "metadata-retriever"
 	AuthorizeOrg ModelType = "authorize-org"
 	GenProject ModelType = "gen-project"
+	Diff ModelType = "diff"
 )
 
 type Args struct {
@@ -29,6 +31,7 @@ type Args struct {
 	MetadataType newMetadata.MetadataType `arg:"-t, --type" help:"Metadata type (LWC, ApexClass, ApexTrigger)"`
 	Editor string `arg:"-e, --editor" help:"Editor to open generated files"`
 	Output string `arg:"-o, --output" help:"Path to force-app"`
+	File string `arg:"-f, --file" help:"Path to file to diff"`
 }
 
 var args Args
@@ -85,6 +88,11 @@ func (m Model) View() string {
 
 func main() {
 	p := arg.MustParse(&args)
-	model := New(args.Model, p)
-	tea.NewProgram(model, tea.WithAltScreen()).Run()
+	if args.Model == Diff {
+		diff.Process(args.File, args.Editor)
+	} else {
+		model := New(args.Model, p)
+		tea.NewProgram(model, tea.WithAltScreen()).Run()
+	}
+
 }

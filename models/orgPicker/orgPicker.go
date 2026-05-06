@@ -119,6 +119,7 @@ func fetchOrgsCmd() tea.Cmd {
 	return func() tea.Msg {
 		raw, err := exec.Command("sf", ORG_LIST...).Output()
 		if err != nil {
+fmt.Println()
 			return fetchOrgsMsg{err: err}
 		}
 
